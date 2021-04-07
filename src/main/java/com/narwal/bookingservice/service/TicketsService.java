@@ -35,4 +35,16 @@ public class TicketsService {
         return ticketData.orElse(null);
     }
 
+    public Optional<Ticket> getTicketByPNR(String PNR){
+        return  ticketsRepo.getTicketByPNR(PNR);
+    }
+
+    public Ticket updateTicketByPNR(String PNR, Ticket ticket){
+        Optional<Ticket> ticketData = ticketsRepo.findTicketByPNR(PNR);
+        if(ticketData.isPresent()){
+            ticketsRepo.save(ticket);
+        }
+        return ticket;
+    }
+
 }

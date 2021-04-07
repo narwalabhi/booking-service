@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @AllArgsConstructor
@@ -17,11 +18,17 @@ public class BookTicketRequest {
     private String tripId;
     private Date tripDate;
     private String trainId;
-    private int firstAcSeats;
-    private int secondAcSeats;
-    private int thirdAcSeats;
-    private int firstClassSeats;
-    private int chairCarSeats;
-    private int sleeperSeats;
+    private HashMap<String, Integer> seats;
     private List<Passenger> passengers;
+
+    @Override
+    public String toString() {
+        return "BookTicketRequest{" +
+                "tripId='" + tripId + '\'' +
+                ", tripDate=" + tripDate +
+                ", trainId='" + trainId + '\'' +
+                ", seats=" + seats +
+                ", passengers=" + passengers +
+                '}';
+    }
 }

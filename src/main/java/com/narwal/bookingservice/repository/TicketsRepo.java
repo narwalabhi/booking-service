@@ -13,6 +13,9 @@ public interface TicketsRepo extends MongoRepository<Ticket, String> {
 
     public void deleteByTicketId(String ticketId);
 
-    public void findTicketByPNR(String PNR);
+    public Optional<Ticket> findTicketByPNR(String PNR);
+
+    public Optional<Ticket> getTicketByPNR(String PNR);
+
 
 }
