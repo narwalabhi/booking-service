@@ -180,8 +180,8 @@ public class TicketController {
     }
 
     //TODO check if ticket is cancellable before cancelling
-    @DeleteMapping("/cancel/{PNR}")
-    public void deleteTicket(@PathVariable String PNR){
+    @PutMapping("/cancel/{PNR}")
+    public void cancelTicket(@PathVariable String PNR){
         Optional<Ticket> ticket = ticketsService.getTicketByPNR(PNR);
         if(ticket.isPresent()){
             Ticket ticketData = ticket.get();
@@ -217,9 +217,15 @@ public class TicketController {
         }
     }
 
-    @GetMapping("/get/{ticketId}")
-    public Ticket getTicket(@PathVariable String ticketId){
-        return ticketsService.getTicketByTicketId(ticketId);
+    @GetMapping("/get/{PNR}")
+    public Ticket getTicket(@PathVariable String PNR){
+        Optional<Ticket> ticket = ticketsService.getTicketByPNR(PNR);
+        return ticket.orElse(null);
+    }
+
+    @PutMapping("/cancel-all/{tripScheduleID}")
+    public List<Ticket> cancelAllTicketsByTripScheduleId(@PathVariable String tripScheduleID){
+        return ticketsService.getTicketsByTripScheduleId(tripScheduleID);
     }
 
 }
