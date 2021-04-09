@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import java.util.List;
 public class BookTicketRequest {
 
     private String tripId;
-    private Date tripDate;
+    private String tripDate;
     private String trainId;
     private HashMap<String, Integer> seats;
     private List<Passenger> passengers;

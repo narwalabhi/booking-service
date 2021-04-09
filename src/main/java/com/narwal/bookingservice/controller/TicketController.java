@@ -1,14 +1,18 @@
 package com.narwal.bookingservice.controller;
 
+import com.narwal.bookingservice.exception.ApiRequestException;
 import com.narwal.bookingservice.model.*;
 import com.narwal.bookingservice.service.TicketsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -64,96 +68,104 @@ public class TicketController {
     //TODO move the code into a service
     //TODO Add PNR Logic
     @PostMapping("/book")
-    public Ticket createTicket(@RequestBody BookTicketRequest bookTicketRequest){
+    public Ticket createTicket(@RequestBody BookTicketRequest bookTicketRequest) throws ParseException {
         System.out.println(getTripUrl + "/" + bookTicketRequest.getTripId());
         System.out.println(bookTicketRequest);
         Trip trip = restTemplate.getForObject(getTripUrl + "/" + bookTicketRequest.getTripId(), Trip.class);
         System.out.println(trip);
-        if(trip != null){
-            TripSchedule tripScheduleData = restTemplate.getForObject(getTripScheduleUrl + "/" + bookTicketRequest.getTripId() + "/" + bookTicketRequest.getTripDate().toString(), TripSchedule.class);
-            if(tripScheduleData == null){
+        if (trip != null) {
+            TripSchedule tripScheduleData = restTemplate.getForObject(getTripScheduleUrl + "/" + bookTicketRequest.getTripId() + "/" + bookTicketRequest.getTripDate(), TripSchedule.class);
+            System.out.println("TripSchedule " + tripScheduleData);
+            if (tripScheduleData == null) {
                 Train train = restTemplate.getForObject(getTrainUrl + "/" + bookTicketRequest.getTrainId(), Train.class);
-                tripScheduleData = new TripSchedule();
-                tripScheduleData.setTripId(bookTicketRequest.getTripId());
-                tripScheduleData.setTripDate(bookTicketRequest.getTripDate());
-                tripScheduleData.setFirstAcAvailableSeats(train.getFirstAcSeats());
-                tripScheduleData.setSecondAcAvailableSeats(train.getSecondAcSeats());
-                tripScheduleData.setThirdAcAvailableSeats(train.getThirdAcSeats());
-                tripScheduleData.setChairCarAcAvailableSeats(train.getChairCarSeats());
-                tripScheduleData.setFirstClassAcAvailableSeats(train.getFirstClassSeats());
-                tripScheduleData.setSleeperAvailableSeats(train.getSleeperSeats());
-                tripScheduleData = restTemplate.exchange(addTripSchedule,HttpMethod.POST, new HttpEntity<TripSchedule>(tripScheduleData), TripSchedule.class).getBody();
+                System.out.println("Train " + train);
+                if (train != null) {
+                    tripScheduleData = new TripSchedule();
+                    tripScheduleData.setTripId(bookTicketRequest.getTripId());
+                    try {
+                        tripScheduleData.setTripDate(new SimpleDateFormat("yyyy-MM-dd").parse(bookTicketRequest.getTripDate()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    tripScheduleData.setFirstAcAvailableSeats(train.getFirstAcSeats());
+                    tripScheduleData.setSecondAcAvailableSeats(train.getSecondAcSeats());
+                    tripScheduleData.setThirdAcAvailableSeats(train.getThirdAcSeats());
+                    tripScheduleData.setChairCarAcAvailableSeats(train.getChairCarSeats());
+                    tripScheduleData.setFirstClassAcAvailableSeats(train.getFirstClassSeats());
+                    tripScheduleData.setSleeperAvailableSeats(train.getSleeperSeats());
+                    tripScheduleData = restTemplate.exchange(addTripSchedule, HttpMethod.POST, new HttpEntity<TripSchedule>(tripScheduleData), TripSchedule.class).getBody();
+                } else throw new ApiRequestException("Invalid trainId");
             }
             Ticket ticket = new Ticket();
             HashMap<String, Integer> seatsReq = bookTicketRequest.getSeats();
             HashMap<String, List<Integer>> assignedSeats = new HashMap<>();
-            if(seatsReq.containsKey(firstAcCode)){
-                if(tripScheduleData.getFirstAcAvailableSeats() >= seatsReq.get(firstAcCode)){
-                    for (int i = 0; i < seatsReq.get(firstAcCode); i++){
-                        if(assignedSeats.containsKey(firstAcCode)){
-                            assignedSeats.get(firstAcCode).add(tripScheduleData.getFirstAcAvailableSeats()-i);
-                        }else{
-                            assignedSeats.put(firstAcCode, new ArrayList<>(List.of(tripScheduleData.getFirstAcAvailableSeats()-i)));
+            if (seatsReq.containsKey(firstAcCode)) {
+                if (tripScheduleData.getFirstAcAvailableSeats() >= seatsReq.get(firstAcCode)) {
+                    for (int i = 0; i < seatsReq.get(firstAcCode); i++) {
+                        if (assignedSeats.containsKey(firstAcCode)) {
+                            assignedSeats.get(firstAcCode).add(tripScheduleData.getFirstAcAvailableSeats() - i);
+                        } else {
+                            assignedSeats.put(firstAcCode, new ArrayList<>(List.of(tripScheduleData.getFirstAcAvailableSeats() - i)));
                         }
                     }
                     tripScheduleData.setFirstAcAvailableSeats(tripScheduleData.getFirstAcAvailableSeats() - seatsReq.get(firstAcCode));
                 }
             }
-            if(seatsReq.containsKey(secondAcCode)){
-                if(tripScheduleData.getSecondAcAvailableSeats() >= seatsReq.get(secondAcCode)){
-                    for (int i = 0; i < seatsReq.get(secondAcCode); i++){
-                        if(assignedSeats.containsKey(secondAcCode)){
-                            assignedSeats.get(secondAcCode).add(tripScheduleData.getSecondAcAvailableSeats()-i);
-                        }else{
-                            assignedSeats.put(secondAcCode, new ArrayList<>(List.of(tripScheduleData.getSecondAcAvailableSeats()-i)));
+            if (seatsReq.containsKey(secondAcCode)) {
+                if (tripScheduleData.getSecondAcAvailableSeats() >= seatsReq.get(secondAcCode)) {
+                    for (int i = 0; i < seatsReq.get(secondAcCode); i++) {
+                        if (assignedSeats.containsKey(secondAcCode)) {
+                            assignedSeats.get(secondAcCode).add(tripScheduleData.getSecondAcAvailableSeats() - i);
+                        } else {
+                            assignedSeats.put(secondAcCode, new ArrayList<>(List.of(tripScheduleData.getSecondAcAvailableSeats() - i)));
                         }
                     }
                     tripScheduleData.setSecondAcAvailableSeats(tripScheduleData.getSecondAcAvailableSeats() - seatsReq.get(secondAcCode));
                 }
             }
-            if(seatsReq.containsKey(thirdAcSeats)){
-                if(tripScheduleData.getThirdAcAvailableSeats() >= seatsReq.get(thirdAcSeats)){
-                    for (int i = 0; i < seatsReq.get(thirdAcSeats); i++){
-                        if(assignedSeats.containsKey(thirdAcSeats)){
-                            assignedSeats.get(thirdAcSeats).add(tripScheduleData.getThirdAcAvailableSeats()-i);
-                        }else{
-                            assignedSeats.put(thirdAcSeats, new ArrayList<>(List.of(tripScheduleData.getThirdAcAvailableSeats()-i)));
+            if (seatsReq.containsKey(thirdAcSeats)) {
+                if (tripScheduleData.getThirdAcAvailableSeats() >= seatsReq.get(thirdAcSeats)) {
+                    for (int i = 0; i < seatsReq.get(thirdAcSeats); i++) {
+                        if (assignedSeats.containsKey(thirdAcSeats)) {
+                            assignedSeats.get(thirdAcSeats).add(tripScheduleData.getThirdAcAvailableSeats() - i);
+                        } else {
+                            assignedSeats.put(thirdAcSeats, new ArrayList<>(List.of(tripScheduleData.getThirdAcAvailableSeats() - i)));
                         }
                     }
                     tripScheduleData.setThirdAcAvailableSeats(tripScheduleData.getThirdAcAvailableSeats() - seatsReq.get(thirdAcSeats));
                 }
             }
-            if(seatsReq.containsKey(firstClass)){
-                if(tripScheduleData.getFirstClassAcAvailableSeats() >= seatsReq.get(firstClass)){
-                    for (int i = 0; i < seatsReq.get(firstClass); i++){
-                        if(assignedSeats.containsKey(firstClass)){
-                            assignedSeats.get(firstClass).add(tripScheduleData.getFirstClassAcAvailableSeats()-i);
-                        }else{
-                            assignedSeats.put(firstClass, new ArrayList<>(List.of(tripScheduleData.getFirstClassAcAvailableSeats()-i)));
+            if (seatsReq.containsKey(firstClass)) {
+                if (tripScheduleData.getFirstClassAcAvailableSeats() >= seatsReq.get(firstClass)) {
+                    for (int i = 0; i < seatsReq.get(firstClass); i++) {
+                        if (assignedSeats.containsKey(firstClass)) {
+                            assignedSeats.get(firstClass).add(tripScheduleData.getFirstClassAcAvailableSeats() - i);
+                        } else {
+                            assignedSeats.put(firstClass, new ArrayList<>(List.of(tripScheduleData.getFirstClassAcAvailableSeats() - i)));
                         }
                     }
                     tripScheduleData.setFirstClassAcAvailableSeats(tripScheduleData.getFirstClassAcAvailableSeats() - seatsReq.get(firstClass));
                 }
             }
-            if(seatsReq.containsKey(chairCar)){
-                if(tripScheduleData.getChairCarAcAvailableSeats() >= seatsReq.get(chairCar)){
-                    for (int i = 0; i < seatsReq.get(chairCar); i++){
-                        if(assignedSeats.containsKey(chairCar)){
-                            assignedSeats.get(chairCar).add(tripScheduleData.getChairCarAcAvailableSeats()-i);
-                        }else{
-                            assignedSeats.put(chairCar, new ArrayList<>(List.of(tripScheduleData.getChairCarAcAvailableSeats()-i)));
+            if (seatsReq.containsKey(chairCar)) {
+                if (tripScheduleData.getChairCarAcAvailableSeats() >= seatsReq.get(chairCar)) {
+                    for (int i = 0; i < seatsReq.get(chairCar); i++) {
+                        if (assignedSeats.containsKey(chairCar)) {
+                            assignedSeats.get(chairCar).add(tripScheduleData.getChairCarAcAvailableSeats() - i);
+                        } else {
+                            assignedSeats.put(chairCar, new ArrayList<>(List.of(tripScheduleData.getChairCarAcAvailableSeats() - i)));
                         }
                     }
                     tripScheduleData.setChairCarAcAvailableSeats(tripScheduleData.getChairCarAcAvailableSeats() - seatsReq.get(chairCar));
                 }
             }
-            if(seatsReq.containsKey(sleeper)){
-                if(tripScheduleData.getSleeperAvailableSeats() >= seatsReq.get(sleeper)){
-                    for (int i = 0; i < seatsReq.get(sleeper); i++){
-                        if(assignedSeats.containsKey(sleeper)){
-                            assignedSeats.get(sleeper).add(tripScheduleData.getSleeperAvailableSeats()-i);
-                        }else{
-                            assignedSeats.put(sleeper, Arrays.asList(tripScheduleData.getSleeperAvailableSeats()-i));
+            if (seatsReq.containsKey(sleeper)) {
+                if (tripScheduleData.getSleeperAvailableSeats() >= seatsReq.get(sleeper)) {
+                    for (int i = 0; i < seatsReq.get(sleeper); i++) {
+                        if (assignedSeats.containsKey(sleeper)) {
+                            assignedSeats.get(sleeper).add(tripScheduleData.getSleeperAvailableSeats() - i);
+                        } else {
+                            assignedSeats.put(sleeper, Arrays.asList(tripScheduleData.getSleeperAvailableSeats() - i));
                         }
                     }
                     tripScheduleData.setSleeperAvailableSeats(tripScheduleData.getSleeperAvailableSeats() - seatsReq.get(sleeper));
@@ -170,42 +182,41 @@ public class TicketController {
             System.out.println(tripScheduleData);
             restTemplate.exchange(updateTripScheduleUrl + "/" + tripScheduleData.getId(), HttpMethod.PUT, new HttpEntity<TripSchedule>(tripScheduleData), TripSchedule.class);
             return ticketsService.createTicket(ticket);
-        }
-        return null;
+        } else throw new ApiRequestException("Invalid tripID");
     }
 
     @PutMapping("/update/{ticketId}")
-    public Ticket updateTicket(@PathVariable String ticketId, @RequestBody Ticket ticket){
+    public Ticket updateTicket(@PathVariable String ticketId, @RequestBody Ticket ticket) {
         return ticketsService.updateTicket(ticketId, ticket);
     }
 
-    //TODO check if ticket is cancellable before cancelling
+
     @PutMapping("/cancel/{PNR}")
-    public void cancelTicket(@PathVariable String PNR){
+    public void cancelTicket(@PathVariable String PNR) {
         Optional<Ticket> ticket = ticketsService.getTicketByPNR(PNR);
-        if(ticket.isPresent()){
+        if (ticket.isPresent()) {
             Ticket ticketData = ticket.get();
             HashMap<String, List<Integer>> seats = ticketData.getSeats();
             System.out.println(seats);
             TripSchedule tripSchedule = restTemplate.getForObject(getTripScheduleUrl + "/" + ticketData.getTripScheduleId(), TripSchedule.class);
-            if(tripSchedule != null){
-                if(seats.containsKey(firstAcCode)){
+            if (tripSchedule != null) {
+                if (seats.containsKey(firstAcCode)) {
                     System.out.println(firstAcCode);
                     tripSchedule.setFirstAcAvailableSeats(tripSchedule.getFirstAcAvailableSeats() + seats.get(firstAcCode).size());
                 }
-                if(seats.containsKey(secondAcCode)){
+                if (seats.containsKey(secondAcCode)) {
                     tripSchedule.setSecondAcAvailableSeats(tripSchedule.getSecondAcAvailableSeats() + seats.get(secondAcCode).size());
                 }
-                if(seats.containsKey(thirdAcSeats)){
+                if (seats.containsKey(thirdAcSeats)) {
                     tripSchedule.setThirdAcAvailableSeats(tripSchedule.getThirdAcAvailableSeats() + seats.get(thirdAcSeats).size());
                 }
-                if(seats.containsKey(firstClass)){
+                if (seats.containsKey(firstClass)) {
                     tripSchedule.setFirstClassAcAvailableSeats(tripSchedule.getFirstClassAcAvailableSeats() + seats.get(firstClass).size());
                 }
-                if(seats.containsKey(chairCar)){
+                if (seats.containsKey(chairCar)) {
                     tripSchedule.setChairCarAcAvailableSeats(tripSchedule.getChairCarAcAvailableSeats() + seats.get(chairCar).size());
                 }
-                if(seats.containsKey(sleeper)){
+                if (seats.containsKey(sleeper)) {
                     tripSchedule.setSleeperAvailableSeats(tripSchedule.getSleeperAvailableSeats() + seats.get(sleeper).size());
                 }
                 restTemplate.exchange(updateTripScheduleUrl + "/" + tripSchedule.getId(), HttpMethod.PUT, new HttpEntity<TripSchedule>(tripSchedule), TripSchedule.class);
@@ -218,13 +229,14 @@ public class TicketController {
     }
 
     @GetMapping("/get/{PNR}")
-    public Ticket getTicket(@PathVariable String PNR){
+    public Ticket getTicket(@PathVariable String PNR) {
         Optional<Ticket> ticket = ticketsService.getTicketByPNR(PNR);
         return ticket.orElse(null);
     }
 
+    //TODO Add update query for all tickets with tripScheduleId param
     @PutMapping("/cancel-all/{tripScheduleID}")
-    public List<Ticket> cancelAllTicketsByTripScheduleId(@PathVariable String tripScheduleID){
+    public List<Ticket> cancelAllTicketsByTripScheduleId(@PathVariable String tripScheduleID) {
         return ticketsService.getTicketsByTripScheduleId(tripScheduleID);
     }
 

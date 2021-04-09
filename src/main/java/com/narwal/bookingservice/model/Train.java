@@ -32,4 +32,25 @@ public class Train {
     private LocalTime departure;
     private LocalTime arrival;
     private int distance;
+
+    @Override
+    public String toString() {
+        return "Train{" +
+                "number='" + number + '\'' +
+                ", name='" + name + '\'' +
+                ", fromStationCode='" + fromStationCode + '\'' +
+                ", toStationCode='" + toStationCode + '\'' +
+                ", firstAcSeats=" + firstAcSeats +
+                ", secondAcSeats=" + secondAcSeats +
+                ", thirdAcSeats=" + thirdAcSeats +
+                ", firstClassSeats=" + firstClassSeats +
+                ", chairCarSeats=" + chairCarSeats +
+                ", sleeperSeats=" + sleeperSeats +
+                ", durationHrs=" + durationHrs +
+                ", durationMns=" + durationMns +
+                ", departure=" + departure +
+                ", arrival=" + arrival +
+                ", distance=" + distance +
+                '}';
+    }
 }

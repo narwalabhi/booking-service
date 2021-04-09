@@ -12,6 +12,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableEurekaClient
 @EnableSwagger2
 public class BookingServiceApplication {
+
     @Bean
     @LoadBalanced
     public RestTemplate getRestTemplate() {
