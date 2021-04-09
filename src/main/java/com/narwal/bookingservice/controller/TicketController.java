@@ -1,13 +1,14 @@
 package com.narwal.bookingservice.controller;
 
 import com.narwal.bookingservice.exception.ApiRequestException;
+import com.narwal.bookingservice.exception.TicketNotFoundException;
 import com.narwal.bookingservice.model.*;
 import com.narwal.bookingservice.service.TicketsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -68,7 +69,7 @@ public class TicketController {
     //TODO move the code into a service
     //TODO Add PNR Logic
     @PostMapping("/book")
-    public Ticket createTicket(@RequestBody BookTicketRequest bookTicketRequest) throws ParseException {
+    public ResponseEntity<Ticket> createTicket(@RequestBody BookTicketRequest bookTicketRequest) throws ParseException {
         System.out.println(getTripUrl + "/" + bookTicketRequest.getTripId());
         System.out.println(bookTicketRequest);
         Trip trip = restTemplate.getForObject(getTripUrl + "/" + bookTicketRequest.getTripId(), Trip.class);
@@ -184,18 +185,22 @@ public class TicketController {
             ticket.setStatus(bookedStatus);
             System.out.println(tripScheduleData);
             restTemplate.exchange(updateTripScheduleUrl + "/" + tripScheduleData.getId(), HttpMethod.PUT, new HttpEntity<TripSchedule>(tripScheduleData), TripSchedule.class);
-            return ticketsService.createTicket(ticket);
+            return ResponseEntity.ok(ticketsService.createTicket(ticket));
         } else throw new ApiRequestException("Invalid tripID");
     }
 
     @PutMapping("/update/{ticketId}")
-    public Ticket updateTicket(@PathVariable String ticketId, @RequestBody Ticket ticket) {
-        return ticketsService.updateTicket(ticketId, ticket);
+    public ResponseEntity<Ticket> updateTicket(@PathVariable String ticketId, @RequestBody Ticket ticket) {
+        Optional<Ticket> ticketOptional = ticketsService.updateTicket(ticketId, ticket);
+        if (ticketOptional.isPresent()){
+            return ResponseEntity.ok(ticketOptional.get());
+        }
+        throw new TicketNotFoundException("Ticket with ticketId " + ticketId + " was not found.");
     }
 
 
     @PutMapping("/cancel/{PNR}")
-    public void cancelTicket(@PathVariable String PNR) {
+    public ResponseEntity<Ticket> cancelTicket(@PathVariable String PNR) {
         Optional<Ticket> ticket = ticketsService.getTicketByPNR(PNR);
         if (ticket.isPresent()) {
             Ticket ticketData = ticket.get();
@@ -227,17 +232,20 @@ public class TicketController {
             System.out.println(tripSchedule);
             ticketData.setStatus(cancelledStatus);
             System.out.println(ticketData);
-            ticketsService.updateTicketByPNR(PNR, ticketData);
-        }
+            return ResponseEntity.ok(ticketsService.updateTicketByPNR(PNR, ticketData));
+        }else throw new TicketNotFoundException("Ticket with PNR " + PNR + " was not found");
     }
 
     @GetMapping("/get/{PNR}")
-    public Ticket getTicket(@PathVariable String PNR) {
+    public ResponseEntity<Ticket> getTicket(@PathVariable String PNR) {
         Optional<Ticket> ticket = ticketsService.getTicketByPNR(PNR);
-        return ticket.orElse(null);
+        if(ticket.isPresent()){
+            return ResponseEntity.ok(ticket.get());
+        }else throw new TicketNotFoundException("Ticket with PNR " + PNR + " was not found");
     }
 
     //TODO Add update query for all tickets with tripScheduleId param
+    //TODO Change return type from list to a POJO containing List<Ticket> for further changes
     @PutMapping("/cancel-all/{tripScheduleID}")
     public List<Ticket> cancelAllTicketsByTripScheduleId(@PathVariable String tripScheduleID) {
         return ticketsService.getTicketsByTripScheduleId(tripScheduleID);

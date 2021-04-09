@@ -1,5 +1,6 @@
 package com.narwal.bookingservice.service;
 
+import com.narwal.bookingservice.exception.TicketNotFoundException;
 import com.narwal.bookingservice.model.Ticket;
 import com.narwal.bookingservice.repository.TicketsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +20,12 @@ public class TicketsService {
        return ticketsRepo.save(ticket);
     }
 
-    public Ticket updateTicket(String ticketId, Ticket ticket){
+    public Optional<Ticket> updateTicket(String ticketId, Ticket ticket){
         Optional<Ticket> ticketData = ticketsRepo.findByTicketId(ticketId);
         if(ticketData.isPresent()){
-            ticketsRepo.save(ticket);
+            return Optional.of(ticketsRepo.save(ticket));
         }
-        return ticket;
+        return Optional.empty();
     }
 
     public void deleteTicket(String ticketId){

@@ -22,7 +22,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(value = {TicketNotFoundException.class})
-    public ResponseEntity<Object> handleTicketNotFoundException(ApiRequestException e){
+    public ResponseEntity<Object> handleTicketNotFoundException(TicketNotFoundException e){
         ApiException apiException = new ApiException(
                 e.getMessage(),
                 HttpStatus.NOT_FOUND,
