@@ -83,7 +83,10 @@ public class TicketController {
                     tripScheduleData = new TripSchedule();
                     tripScheduleData.setTripId(bookTicketRequest.getTripId());
                     try {
-                        tripScheduleData.setTripDate(new SimpleDateFormat("yyyy-MM-dd").parse(bookTicketRequest.getTripDate()));
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+                        tripScheduleData.setTripDate(simpleDateFormat.parse(bookTicketRequest.getTripDate()));
+                        System.out.println(tripScheduleData.getTripDate());
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
