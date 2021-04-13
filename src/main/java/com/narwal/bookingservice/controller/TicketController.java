@@ -14,6 +14,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -83,14 +85,10 @@ public class TicketController {
                 if (train != null) {
                     tripScheduleData = new TripSchedule();
                     tripScheduleData.setTripId(bookTicketRequest.getTripId());
-                    try {
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                        tripScheduleData.setTripDate(simpleDateFormat.parse(bookTicketRequest.getTripDate()));
-                        System.out.println(tripScheduleData.getTripDate());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//                        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+                    tripScheduleData.setTripDate(LocalDate.parse(bookTicketRequest.getTripDate(), dateTimeFormatter));
+                    System.out.println(tripScheduleData.getTripDate());
                     tripScheduleData.setFirstAcAvailableSeats(train.getFirstAcSeats());
                     tripScheduleData.setSecondAcAvailableSeats(train.getSecondAcSeats());
                     tripScheduleData.setThirdAcAvailableSeats(train.getThirdAcSeats());
@@ -249,6 +247,14 @@ public class TicketController {
     @PutMapping("/cancel-all/{tripScheduleID}")
     public List<Ticket> cancelAllTicketsByTripScheduleId(@PathVariable String tripScheduleID) {
         return ticketsService.getTicketsByTripScheduleId(tripScheduleID);
+    }
+
+    @GetMapping("/get-by-id/{id}")
+    public ResponseEntity<Ticket> getTicketById(@PathVariable String id){
+        Optional<Ticket> ticket = ticketsService.getTicketByTicketId(id);
+        if (ticket.isPresent()){
+            return ResponseEntity.ok(ticket.get());
+        }else throw new TicketNotFoundException("Ticket with id " + id + " was not found");
     }
 
 }

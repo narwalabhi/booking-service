@@ -32,9 +32,9 @@ public class TicketsService {
         ticketsRepo.deleteByTicketId(ticketId);
     }
 
-    public Ticket getTicketByTicketId(String ticketId){
+    public Optional<Ticket> getTicketByTicketId(String ticketId){
         Optional<Ticket> ticketData = ticketsRepo.findByTicketId(ticketId);
-        return ticketData.orElse(null);
+        return ticketData;
     }
 
     public Optional<Ticket> getTicketByPNR(String PNR){
