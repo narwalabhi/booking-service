@@ -176,7 +176,7 @@ public class TicketController {
             ticket.setJourneyDate(tripScheduleData.getTripDate());
             ticket.setTripScheduleId(tripScheduleData.getId());
             ticket.setUserId("anarwal@gmail.com");
-            // PNR = Tain No. + JourneyDate + first sear number + Seats Code
+            // PNR = Tain No. + JourneyDate + first seat number + class Code
             String PNR = train.getNumber()+tripScheduleData.getTripDate().toString().replaceAll("-","")+assignedSeats.keySet().toArray()[0] + assignedSeats.values().stream().findFirst().get().get(0);
             System.out.println(PNR);
             ticket.setPNR(PNR);
