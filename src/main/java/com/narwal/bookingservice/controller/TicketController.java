@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
-@RequestMapping("/tickets")
+@RequestMapping("/booking")
 public class TicketController {
 
     @Value("${status.booked}")
