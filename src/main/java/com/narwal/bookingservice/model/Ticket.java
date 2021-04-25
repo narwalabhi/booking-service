@@ -1,9 +1,6 @@
 package com.narwal.bookingservice.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 //TODO add fare using baseFare from trip
 public class Ticket {
     @Id
@@ -33,19 +31,6 @@ public class Ticket {
     private String tripScheduleId;
     private HashMap<String, List<Integer>> seats;
     private String status;
-
-    @Override
-    public String toString() {
-        return "Ticket{" +
-                "ticketId='" + ticketId + '\'' +
-                ", PNR='" + PNR + '\'' +
-                ", passengers=" + passengers +
-                ", cancellable=" + cancellable +
-                ", journeyDate=" + journeyDate +
-                ", userId='" + userId + '\'' +
-                ", tripScheduleId='" + tripScheduleId + '\'' +
-                ", seats=" + seats +
-                ", status='" + status + '\'' +
-                '}';
-    }
+    private String fromStationCode;
+    private String toStationCode;
 }

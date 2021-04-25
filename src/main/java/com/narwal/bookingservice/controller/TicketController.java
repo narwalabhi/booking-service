@@ -181,6 +181,8 @@ public class TicketController {
             System.out.println(PNR);
             ticket.setPNR(PNR);
             ticket.setSeats(assignedSeats);
+            ticket.setFromStationCode(trip.getSourceStationCode());
+            ticket.setToStationCode(trip.getDestinationStationCode());
             ticket.setPassengers(bookTicketRequest.getPassengers());
             ticket.setStatus(bookedStatus);
             System.out.println(tripScheduleData);
