@@ -21,6 +21,7 @@ public class BookTicketRequest {
     private String trainId;
     private HashMap<String, Integer> seats;
     private List<Passenger> passengers;
+    private String email;
 
     @Override
     public String toString() {

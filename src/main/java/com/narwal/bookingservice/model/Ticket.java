@@ -27,7 +27,7 @@ public class Ticket {
     private Boolean cancellable;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate journeyDate;
-    private String userId;
+    private String email;
     private String tripScheduleId;
     private HashMap<String, List<Integer>> seats;
     private String status;

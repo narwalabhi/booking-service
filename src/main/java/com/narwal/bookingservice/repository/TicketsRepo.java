@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,7 @@ public interface TicketsRepo extends MongoRepository<Ticket, String> {
 
     public Optional<Ticket> findByTicketId(String ticketId);
 
-    public void deleteByTicketId(String ticketId);
+    public Optional<Ticket> deleteByTicketId(String ticketId);
 
     public Optional<Ticket> findTicketByPNR(String PNR);
 

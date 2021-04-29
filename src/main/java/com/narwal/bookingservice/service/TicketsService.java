@@ -28,8 +28,9 @@ public class TicketsService {
         return Optional.empty();
     }
 
-    public void deleteTicket(String ticketId){
-        ticketsRepo.deleteByTicketId(ticketId);
+    public Optional<Ticket> deleteTicket(String ticketId){
+        Optional<Ticket> ticket = ticketsRepo.deleteByTicketId(ticketId);
+        return ticket;
     }
 
     public Optional<Ticket> getTicketByTicketId(String ticketId){
@@ -53,4 +54,7 @@ public class TicketsService {
         return ticketsRepo.findTicketByTripScheduleId(tripSchedule);
     }
 
+    public List<Ticket> getAll() {
+        return ticketsRepo.findAll();
+    }
 }

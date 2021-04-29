@@ -1,5 +1,6 @@
 package com.narwal.bookingservice.controller;
 
+import com.narwal.bookingservice.exception.ApiException;
 import com.narwal.bookingservice.exception.ApiRequestException;
 import com.narwal.bookingservice.exception.TicketNotFoundException;
 import com.narwal.bookingservice.model.*;
@@ -175,8 +176,9 @@ public class TicketController {
             ticket.setCancellable(false);
             ticket.setJourneyDate(tripScheduleData.getTripDate());
             ticket.setTripScheduleId(tripScheduleData.getId());
-            ticket.setUserId("anarwal@gmail.com");
+            ticket.setEmail(bookTicketRequest.getEmail());
             // PNR = Tain No. + JourneyDate + first seat number + class Code
+            System.out.println(assignedSeats);
             String PNR = train.getNumber()+tripScheduleData.getTripDate().toString().replaceAll("-","")+assignedSeats.keySet().toArray()[0] + assignedSeats.values().stream().findFirst().get().get(0);
             System.out.println(PNR);
             ticket.setPNR(PNR);
@@ -259,6 +261,20 @@ public class TicketController {
         if (ticket.isPresent()){
             return ResponseEntity.ok(ticket.get());
         }else throw new TicketNotFoundException("Ticket with id " + id + " was not found");
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<List<Ticket>> getAll(){
+        List<Ticket> tickets = ticketsService.getAll();
+        return ResponseEntity.ok(tickets);
+    }
+
+    @DeleteMapping("/delete/{ticketId}")
+    public ResponseEntity<Ticket> deleteTicket(@PathVariable String ticketId){
+        Optional<Ticket> ticket = ticketsService.deleteTicket(ticketId);
+        if (ticket.isPresent()){
+            return ResponseEntity.ok(ticket.get());
+        }else throw new ApiRequestException("Ticket not found");
     }
 
 }
