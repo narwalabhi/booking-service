@@ -57,4 +57,8 @@ public class TicketsService {
     public List<Ticket> getAll() {
         return ticketsRepo.findAll();
     }
+
+    public List<Ticket> getByUser(String userId){
+        return ticketsRepo.findTicketsByUserId(userId);
+    }
 }

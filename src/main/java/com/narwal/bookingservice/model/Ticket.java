@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,10 +26,15 @@ public class Ticket {
     private Boolean cancellable;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate journeyDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate bookingDate;
     private String email;
     private String tripScheduleId;
     private HashMap<String, List<Integer>> seats;
     private String status;
     private String fromStationCode;
     private String toStationCode;
+    private String mobile;
+    private String trainNo;
+    private String userId;
 }

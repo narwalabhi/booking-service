@@ -177,11 +177,15 @@ public class TicketController {
             ticket.setJourneyDate(tripScheduleData.getTripDate());
             ticket.setTripScheduleId(tripScheduleData.getId());
             ticket.setEmail(bookTicketRequest.getEmail());
-            // PNR = Tain No. + JourneyDate + first seat number + class Code
+            // PNR = Train No. + JourneyDate + first seat number + class Code
             System.out.println(assignedSeats);
             String PNR = train.getNumber()+tripScheduleData.getTripDate().toString().replaceAll("-","")+assignedSeats.keySet().toArray()[0] + assignedSeats.values().stream().findFirst().get().get(0);
             System.out.println(PNR);
+            ticket.setUserId(bookTicketRequest.getUserId());
             ticket.setPNR(PNR);
+            ticket.setBookingDate(LocalDate.now());
+            ticket.setTrainNo(train.getNumber());
+            ticket.setMobile(bookTicketRequest.getMobile());
             ticket.setSeats(assignedSeats);
             ticket.setFromStationCode(trip.getSourceStationCode());
             ticket.setToStationCode(trip.getDestinationStationCode());
@@ -266,6 +270,12 @@ public class TicketController {
     @GetMapping("/getAll")
     public ResponseEntity<List<Ticket>> getAll(){
         List<Ticket> tickets = ticketsService.getAll();
+        return ResponseEntity.ok(tickets);
+    }
+
+    @GetMapping("/get-by-user/{userId}")
+    public ResponseEntity<List<Ticket>> getTicketByUser(@PathVariable String userId){
+        List<Ticket> tickets = ticketsService.getByUser(userId);
         return ResponseEntity.ok(tickets);
     }
 

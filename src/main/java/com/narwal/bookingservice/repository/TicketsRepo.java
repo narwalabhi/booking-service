@@ -21,4 +21,7 @@ public interface TicketsRepo extends MongoRepository<Ticket, String> {
     public Optional<Ticket> getTicketByPNR(String PNR);
 
     public List<Ticket> findTicketByTripScheduleId(String tripScheduleId);
+
+    public List<Ticket> findTicketsByUserId(String userId);
+
 }

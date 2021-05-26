@@ -1,12 +1,7 @@
 package com.narwal.bookingservice.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.*;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,6 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class BookTicketRequest {
 
     private String tripId;
@@ -22,15 +18,7 @@ public class BookTicketRequest {
     private HashMap<String, Integer> seats;
     private List<Passenger> passengers;
     private String email;
+    private String mobile;
+    private String userId;
 
-    @Override
-    public String toString() {
-        return "BookTicketRequest{" +
-                "tripId='" + tripId + '\'' +
-                ", tripDate=" + tripDate +
-                ", trainId='" + trainId + '\'' +
-                ", seats=" + seats +
-                ", passengers=" + passengers +
-                '}';
-    }
 }
