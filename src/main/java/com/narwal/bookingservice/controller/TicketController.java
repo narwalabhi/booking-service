@@ -1,14 +1,16 @@
 package com.narwal.bookingservice.controller;
 
-import com.narwal.bookingservice.exception.ApiException;
 import com.narwal.bookingservice.exception.ApiRequestException;
 import com.narwal.bookingservice.exception.TicketNotFoundException;
 import com.narwal.bookingservice.model.*;
+import com.narwal.bookingservice.service.MailService;
 import com.narwal.bookingservice.service.TicketsService;
+import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -63,6 +65,9 @@ public class TicketController {
 
     @Autowired
     RestTemplate restTemplate;
+
+    @Autowired
+    MailService mailService;
 
     @Autowired
     TicketsService ticketsService;
@@ -179,7 +184,7 @@ public class TicketController {
             ticket.setEmail(bookTicketRequest.getEmail());
             // PNR = Train No. + JourneyDate + first seat number + class Code
             System.out.println(assignedSeats);
-            String PNR = train.getNumber()+tripScheduleData.getTripDate().toString().replaceAll("-","")+assignedSeats.keySet().toArray()[0] + assignedSeats.values().stream().findFirst().get().get(0);
+            String PNR = train.getNumber() + tripScheduleData.getTripDate().toString().replaceAll("-", "") + assignedSeats.keySet().toArray()[0] + assignedSeats.values().stream().findFirst().get().get(0);
             System.out.println(PNR);
             ticket.setUserId(bookTicketRequest.getUserId());
             ticket.setPNR(PNR);
@@ -200,7 +205,7 @@ public class TicketController {
     @PutMapping("/update/{ticketId}")
     public ResponseEntity<Ticket> updateTicket(@PathVariable String ticketId, @RequestBody Ticket ticket) {
         Optional<Ticket> ticketOptional = ticketsService.updateTicket(ticketId, ticket);
-        if (ticketOptional.isPresent()){
+        if (ticketOptional.isPresent()) {
             return ResponseEntity.ok(ticketOptional.get());
         }
         throw new TicketNotFoundException("Ticket with ticketId " + ticketId + " was not found.");
@@ -241,15 +246,15 @@ public class TicketController {
             ticketData.setStatus(cancelledStatus);
             System.out.println(ticketData);
             return ResponseEntity.ok(ticketsService.updateTicketByPNR(PNR, ticketData));
-        }else throw new TicketNotFoundException("Ticket with PNR " + PNR + " was not found");
+        } else throw new TicketNotFoundException("Ticket with PNR " + PNR + " was not found");
     }
 
     @GetMapping("/get/{PNR}")
     public ResponseEntity<Ticket> getTicket(@PathVariable String PNR) {
         Optional<Ticket> ticket = ticketsService.getTicketByPNR(PNR);
-        if(ticket.isPresent()){
+        if (ticket.isPresent()) {
             return ResponseEntity.ok(ticket.get());
-        }else throw new TicketNotFoundException("Ticket with PNR " + PNR + " was not found");
+        } else throw new TicketNotFoundException("Ticket with PNR " + PNR + " was not found");
     }
 
     //TODO Add update query for all tickets with tripScheduleId param
@@ -260,31 +265,40 @@ public class TicketController {
     }
 
     @GetMapping("/get-by-id/{id}")
-    public ResponseEntity<Ticket> getTicketById(@PathVariable String id){
+    public ResponseEntity<Ticket> getTicketById(@PathVariable String id) {
         Optional<Ticket> ticket = ticketsService.getTicketByTicketId(id);
-        if (ticket.isPresent()){
+        if (ticket.isPresent()) {
             return ResponseEntity.ok(ticket.get());
-        }else throw new TicketNotFoundException("Ticket with id " + id + " was not found");
+        } else throw new TicketNotFoundException("Ticket with id " + id + " was not found");
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<Ticket>> getAll(){
+    public ResponseEntity<List<Ticket>> getAll() {
         List<Ticket> tickets = ticketsService.getAll();
         return ResponseEntity.ok(tickets);
     }
 
     @GetMapping("/get-by-user/{userId}")
-    public ResponseEntity<List<Ticket>> getTicketByUser(@PathVariable String userId){
+    public ResponseEntity<List<Ticket>> getTicketByUser(@PathVariable String userId) {
         List<Ticket> tickets = ticketsService.getByUser(userId);
         return ResponseEntity.ok(tickets);
     }
 
     @DeleteMapping("/delete/{ticketId}")
-    public ResponseEntity<Ticket> deleteTicket(@PathVariable String ticketId){
+    public ResponseEntity<Ticket> deleteTicket(@PathVariable String ticketId) {
         Optional<Ticket> ticket = ticketsService.deleteTicket(ticketId);
-        if (ticket.isPresent()){
+        if (ticket.isPresent()) {
             return ResponseEntity.ok(ticket.get());
-        }else throw new ApiRequestException("Ticket not found");
+        } else throw new ApiRequestException("Ticket not found");
+    }
+
+    @PostMapping("/email")
+    public ResponseEntity<String> senMail(@RequestBody EmailRequestDTO request) {
+        Map<String, String> model = new HashMap<>();
+        model.put("name", request.getName());
+        model.put("value", "Welcome to ASB Notebook!!");
+        String response = mailService.sendMail(request, model);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 }
