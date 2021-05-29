@@ -4,6 +4,7 @@ import com.narwal.bookingservice.exception.ApiRequestException;
 import com.narwal.bookingservice.exception.TicketNotFoundException;
 import com.narwal.bookingservice.model.*;
 import com.narwal.bookingservice.service.MailService;
+import com.narwal.bookingservice.service.PDFService;
 import com.narwal.bookingservice.service.TicketsService;
 import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,9 @@ public class TicketController {
 
     @Autowired
     TicketsService ticketsService;
+
+    @Autowired
+    PDFService pdfService;
 
     //TODO Add dynamic userID
     //TODO move the code into a service
@@ -197,6 +201,7 @@ public class TicketController {
             ticket.setPassengers(bookTicketRequest.getPassengers());
             ticket.setStatus(bookedStatus);
             System.out.println(tripScheduleData);
+            pdfService.generatePdf(ticket,train);
             restTemplate.exchange(updateTripScheduleUrl + "/" + tripScheduleData.getId(), HttpMethod.PUT, new HttpEntity<TripSchedule>(tripScheduleData), TripSchedule.class);
             return ResponseEntity.ok(ticketsService.createTicket(ticket));
         } else throw new ApiRequestException("Invalid tripID");
@@ -245,6 +250,7 @@ public class TicketController {
             System.out.println(tripSchedule);
             ticketData.setStatus(cancelledStatus);
             System.out.println(ticketData);
+
             return ResponseEntity.ok(ticketsService.updateTicketByPNR(PNR, ticketData));
         } else throw new TicketNotFoundException("Ticket with PNR " + PNR + " was not found");
     }
@@ -298,6 +304,9 @@ public class TicketController {
         model.put("name", request.getName());
         model.put("value", "Welcome to ASB Notebook!!");
         String response = mailService.sendMail(request, model);
+//        Ticket ticket = new Ticket("1","123123",null,false,LocalDate.of(2021,4,30),LocalDate.now(),
+//                "anarwal500@gmail.com", "312312", null, "confirmed", "VVD", "HYD", "8968127667", "12345", "12312");
+//        pdfService.generatePdf(ticket);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

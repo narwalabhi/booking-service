@@ -9,7 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
-public class Passenger {
+public class  Passenger {
     private String name;
     private int age;
     private String gender;
