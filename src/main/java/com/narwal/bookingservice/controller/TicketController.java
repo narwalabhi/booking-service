@@ -202,6 +202,7 @@ public class TicketController {
             ticket.setStatus(bookedStatus);
             System.out.println(tripScheduleData);
             pdfService.generatePdf(ticket,train);
+            System.out.println(mailService.sendMail(ticket.getEmail()));
             restTemplate.exchange(updateTripScheduleUrl + "/" + tripScheduleData.getId(), HttpMethod.PUT, new HttpEntity<TripSchedule>(tripScheduleData), TripSchedule.class);
             return ResponseEntity.ok(ticketsService.createTicket(ticket));
         } else throw new ApiRequestException("Invalid tripID");
@@ -298,16 +299,5 @@ public class TicketController {
         } else throw new ApiRequestException("Ticket not found");
     }
 
-    @PostMapping("/email")
-    public ResponseEntity<String> senMail(@RequestBody EmailRequestDTO request) {
-        Map<String, String> model = new HashMap<>();
-        model.put("name", request.getName());
-        model.put("value", "Welcome to ASB Notebook!!");
-        String response = mailService.sendMail(request, model);
-//        Ticket ticket = new Ticket("1","123123",null,false,LocalDate.of(2021,4,30),LocalDate.now(),
-//                "anarwal500@gmail.com", "312312", null, "confirmed", "VVD", "HYD", "8968127667", "12345", "12312");
-//        pdfService.generatePdf(ticket);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 
 }

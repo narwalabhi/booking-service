@@ -50,7 +50,7 @@ public class PDFService {
 
 
         try {
-            PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream("table.pdf"));
+            PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream("C:\\Users\\anarw\\OneDrive\\Desktop\\CG-Assignments\\RabbitMQ-Assingments\\booking-service\\src\\main\\resources\\static\\ticket.pdf"));
             document.open();
 
             PdfPTable table = new PdfPTable(2);
@@ -244,6 +244,8 @@ public class PDFService {
             document.add(journeyTable);
             document.add(new Paragraph("Passengers"));
             document.add(passengerTable);
+
+
 
 
             document.close();
